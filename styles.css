@@ -192,7 +192,7 @@ textarea {
 
   margin: 0;
 
-  font-size: clamp(40px, 7vw, 84px);
+  font-size: clamp(56px, 7vw, 84px);
   font-weight: 800;
   letter-spacing: -0.075em;
   line-height: 0.98;
