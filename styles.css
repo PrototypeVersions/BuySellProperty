@@ -297,10 +297,7 @@ textarea {
   justify-content: space-between;
 }
 
-.seller-card,
-.buyer-card {
-  background: rgba(255, 255, 255, 0.45);
-}
+
 
 .buyer-card {
   border-right: 1px solid var(--ink);
