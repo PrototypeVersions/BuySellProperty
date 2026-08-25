@@ -298,12 +298,7 @@ textarea {
 }
 
 
-.sellar-card {
-  background: rgba(255, 255, 255, 0.45);
-}
-
 .buyer-card {
-  background: rgba(255, 255, 255, 0.45);
   border-right: 1px solid var(--ink);
 }
 
