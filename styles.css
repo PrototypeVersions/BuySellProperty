@@ -297,12 +297,13 @@ textarea {
   justify-content: space-between;
 }
 
-.seller-card {
-  border-right: 1px solid var(--ink);
-}
-
+.seller-card,
 .buyer-card {
   background: rgba(255, 255, 255, 0.45);
+}
+
+.seller-card {
+  border-right: 1px solid var(--ink);
 }
 
 .card-number {
