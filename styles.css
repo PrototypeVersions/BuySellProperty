@@ -848,6 +848,11 @@ textarea {
   line-height: 1.7;
 }
 
+.search-result {
+  background: #edf4e9;
+  border-left: 4px solid #8aaa7b;
+}
+
 .success-message,
 .status-success {
   background: rgba(35, 70, 160, 0.09);
