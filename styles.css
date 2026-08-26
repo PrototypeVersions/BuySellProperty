@@ -849,7 +849,8 @@ textarea {
 }
 
 .search-result {
-  background: #e1f3d8;
+  background: #d8f0ca;
+  border-left: 4px solid #5f9f4e;
 }
 
 .success-message,
