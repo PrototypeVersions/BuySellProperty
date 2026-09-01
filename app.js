@@ -7,38 +7,14 @@
   "use strict";
 
   /*
-    OPTIONAL PROPERTY-DATA CONNECTION
+    Live MREO property-data endpoint.
 
-    A static GitHub Pages site cannot directly read or scrape Zillow's
-    property pages because Zillow does not make those pages available
-    to arbitrary cross-origin browser JavaScript.
-
-    The Seller Search below therefore works immediately for:
-      - Zillow search
-      - Google Maps search
-      - address parsing
-      - Seller-form address autofill
-
-    It is also prepared for richer automatic property-data lookup.
-
-    If MREO later connects a permitted property-data API through a
-    serverless function, proxy, or other endpoint, define:
-
-      window.MREO_PROPERTY_DATA_ENDPOINT =
-        "https://your-endpoint.example.com/property";
-
-    BEFORE app.js loads.
-
-    MREO will call:
-
-      GET <endpoint>?address=<encoded address>
-
-    and automatically map common Zillow-style/property-data fields
-    into the Seller form.
+    This Cloudflare Worker securely connects to RentCast.
+    The RentCast API key itself is NOT exposed here.
   */
 
   const PROPERTY_DATA_ENDPOINT =
-    window.MREO_PROPERTY_DATA_ENDPOINT || "";
+    "https://mreo-property-api.blakeaustinmyers01.workers.dev";
 
   const state = {
     activeModal: null,
@@ -70,21 +46,31 @@
   */
 
   function updateCopyrightYear() {
-    const yearElement = document.getElementById("current-year");
+    const yearElement =
+      document.getElementById("current-year");
 
     if (yearElement) {
-      yearElement.textContent = new Date().getFullYear();
+      yearElement.textContent =
+        new Date().getFullYear();
     }
   }
 
   function getFieldValue(id) {
-    const field = document.getElementById(id);
+    const field =
+      document.getElementById(id);
 
-    return field ? field.value.trim() : "";
+    return field
+      ? field.value.trim()
+      : "";
   }
 
-  function setFieldValue(id, value, options = {}) {
-    const field = document.getElementById(id);
+  function setFieldValue(
+    id,
+    value,
+    options = {}
+  ) {
+    const field =
+      document.getElementById(id);
 
     if (!field) {
       return false;
@@ -110,22 +96,29 @@
       return false;
     }
 
-    field.value = String(value).trim();
+    field.value =
+      String(value).trim();
 
     if (markAutofilled) {
       field.dataset.autofilled = "true";
     }
 
     field.dispatchEvent(
-      new Event("input", {
-        bubbles: true
-      })
+      new Event(
+        "input",
+        {
+          bubbles: true
+        }
+      )
     );
 
     field.dispatchEvent(
-      new Event("change", {
-        bubbles: true
-      })
+      new Event(
+        "change",
+        {
+          bubbles: true
+        }
+      )
     );
 
     return true;
@@ -136,15 +129,18 @@
     value,
     fallback = "____________________"
   ) {
-    const element = document.getElementById(id);
+    const element =
+      document.getElementById(id);
 
     if (element) {
-      element.textContent = value || fallback;
+      element.textContent =
+        value || fallback;
     }
   }
 
   function formatCurrency(value) {
-    const number = Number(value);
+    const number =
+      Number(value);
 
     if (
       value === "" ||
@@ -155,19 +151,38 @@
       return "____________________";
     }
 
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      maximumFractionDigits: 0
-    }).format(number);
+    return new Intl.NumberFormat(
+      "en-US",
+      {
+        style: "currency",
+        currency: "USD",
+        maximumFractionDigits: 0
+      }
+    ).format(number);
+  }
+
+  function formatNumber(value) {
+    const number =
+      Number(value);
+
+    if (!Number.isFinite(number)) {
+      return "";
+    }
+
+    return new Intl.NumberFormat(
+      "en-US"
+    ).format(number);
   }
 
   function formatDate() {
-    return new Intl.DateTimeFormat("en-US", {
-      month: "long",
-      day: "numeric",
-      year: "numeric"
-    }).format(new Date());
+    return new Intl.DateTimeFormat(
+      "en-US",
+      {
+        month: "long",
+        day: "numeric",
+        year: "numeric"
+      }
+    ).format(new Date());
   }
 
   function showMessage(
@@ -190,9 +205,13 @@
     );
 
     if (type === "error") {
-      element.classList.add("error-message");
+      element.classList.add(
+        "error-message"
+      );
     } else {
-      element.classList.add("success-message");
+      element.classList.add(
+        "success-message"
+      );
     }
   }
 
@@ -211,39 +230,28 @@
         : "";
     }
 
-    const cleaned = String(value)
-      .replace(/[$,\s]/g, "")
-      .replace(/[^\d.-]/g, "");
+    const cleaned =
+      String(value)
+        .replace(/[$,\s]/g, "")
+        .replace(/[^\d.-]/g, "");
 
-    const number = Number(cleaned);
+    const number =
+      Number(cleaned);
 
     return Number.isFinite(number)
       ? number
       : "";
   }
 
-  function firstDefined(...values) {
-    for (const value of values) {
-      if (
-        value !== undefined &&
-        value !== null &&
-        String(value).trim() !== ""
-      ) {
-        return value;
-      }
-    }
-
-    return "";
-  }
-
   /*
     ============================================
-    ZILLOW AND GOOGLE MAPS URL BUILDERS
+    EXTERNAL PROPERTY LINKS
     ============================================
   */
 
   function buildZillowSearchUrl(address) {
-    const encodedAddress = encodeURIComponent(address);
+    const encodedAddress =
+      encodeURIComponent(address);
 
     return (
       `https://www.zillow.com/homes/${encodedAddress}_rb/`
@@ -251,7 +259,8 @@
   }
 
   function buildGoogleMapsUrl(address) {
-    const encodedAddress = encodeURIComponent(address);
+    const encodedAddress =
+      encodeURIComponent(address);
 
     return (
       "https://www.google.com/maps/search/" +
@@ -266,9 +275,10 @@
   */
 
   function initializeSellerSearch() {
-    const searchForm = document.getElementById(
-      "seller-search-form"
-    );
+    const searchForm =
+      document.getElementById(
+        "seller-search-form"
+      );
 
     if (!searchForm) {
       return;
@@ -279,29 +289,52 @@
       async (event) => {
         event.preventDefault();
 
-        if (!searchForm.reportValidity()) {
+        if (
+          !searchForm.reportValidity()
+        ) {
           return;
         }
 
-        const address = getFieldValue(
-          "seller-property-search-address"
-        );
+        const address =
+          getFieldValue(
+            "seller-property-search-address"
+          );
 
         if (!address) {
           return;
         }
 
+        const searchButton =
+          searchForm.querySelector(
+            'button[type="submit"]'
+          );
+
+        const originalButtonText =
+          searchButton
+            ? searchButton.textContent
+            : "";
+
+        if (searchButton) {
+          searchButton.disabled = true;
+          searchButton.textContent =
+            "Searching...";
+        }
+
         const zillowUrl =
-          buildZillowSearchUrl(address);
+          buildZillowSearchUrl(
+            address
+          );
 
         const mapsUrl =
-          buildGoogleMapsUrl(address);
+          buildGoogleMapsUrl(
+            address
+          );
 
         /*
-          Open Zillow immediately.
+          Open Zillow immediately in a new tab.
 
-          This happens before any asynchronous property-data request
-          so browsers are less likely to block the new tab.
+          Doing this directly from the button click makes
+          browsers less likely to block the new tab.
         */
 
         window.open(
@@ -316,107 +349,130 @@
           mapsUrl
         );
 
-        /*
-          First populate everything that can safely be determined
-          from the address supplied by the Seller.
-        */
-
-        const parsedAddress =
-          parseUnitedStatesAddress(address);
-
-        const addressFieldCount =
-          populateSellerAddressFields(parsedAddress);
-
-        updateSellerContract();
-
-        /*
-          If no property-data endpoint has been connected yet,
-          the static GitHub Pages version stops here.
-        */
-
-        if (!PROPERTY_DATA_ENDPOINT) {
-          showSellerAutofillStatus(
-            addressFieldCount > 0
-              ? (
-                  "The property address has been added to the " +
-                  "Seller form below. Zillow has opened in a new " +
-                  "tab. Review the available property information " +
-                  "and complete or correct the remaining fields."
-                )
-              : (
-                  "Zillow has opened in a new tab. The address could " +
-                  "not be separated reliably into all of the Seller " +
-                  "form fields, so please review and complete the " +
-                  "property information below."
-                )
-          );
-
-          scrollToSellerPropertyForm();
-
-          return;
-        }
-
         showSellerAutofillStatus(
-          "The property address has been added. MREO is also " +
-          "checking the connected property-data source for " +
-          "additional information."
+          "Searching available property records..."
         );
 
         try {
-          const propertyData =
-            await fetchPropertyData(address);
-
-          if (!propertyData) {
-            showSellerAutofillStatus(
-              "The address has been added, but no additional " +
-              "property information was returned. Please review " +
-              "Zillow and complete the remaining fields below."
+          const response =
+            await fetchPropertyData(
+              address
             );
 
-            scrollToSellerPropertyForm();
-
-            return;
+          if (
+            !response ||
+            response.ok !== true ||
+            !response.property
+          ) {
+            throw new Error(
+              response?.error ||
+              "No property information was returned."
+            );
           }
 
-          const populatedFields =
-            populateSellerPropertyData(propertyData);
+          const numberPopulated =
+            populateSellerPropertyData(
+              response.property
+            );
 
           updateSellerContract();
 
-          if (populatedFields > 0) {
-            showSellerAutofillStatus(
-              `${populatedFields} additional property field` +
-              `${populatedFields === 1 ? "" : "s"} ` +
-              "were populated from the connected property-data " +
-              "source. Please review the information before " +
-              "submitting."
-            );
-          } else {
-            showSellerAutofillStatus(
-              "The property-data source responded, but no supported " +
-              "additional fields were available. Please review " +
-              "Zillow and complete the remaining information."
-            );
-          }
+          showSellerAutofillStatus(
+            createAutofillSuccessMessage(
+              numberPopulated,
+              response.property
+            )
+          );
 
           scrollToSellerPropertyForm();
         } catch (error) {
           console.error(
-            "MREO property-data lookup failed:",
+            "MREO property search failed:",
             error
           );
 
+          /*
+            Even if RentCast fails, we can still populate the
+            address from what the Seller typed.
+          */
+
+          const parsedAddress =
+            parseUnitedStatesAddress(
+              address
+            );
+
+          populateSellerAddressFields(
+            parsedAddress
+          );
+
+          updateSellerContract();
+
           showSellerAutofillStatus(
-            "The address has been added, but additional property " +
-            "information could not be retrieved. Zillow is still " +
-            "available in the new tab, and you can complete the " +
-            "remaining fields manually."
+            "MREO could not retrieve additional property records. " +
+            "The address has been added to the form, and Zillow " +
+            "has opened in a new tab. Please complete the remaining " +
+            "property information manually."
           );
 
           scrollToSellerPropertyForm();
+        } finally {
+          if (searchButton) {
+            searchButton.disabled =
+              false;
+
+            searchButton.textContent =
+              originalButtonText ||
+              "Search";
+          }
         }
       }
     );
+  }
+
+  async function fetchPropertyData(
+    address
+  ) {
+    const requestUrl =
+      new URL(
+        PROPERTY_DATA_ENDPOINT
+      );
+
+    requestUrl.searchParams.set(
+      "address",
+      address
+    );
+
+    const response =
+      await fetch(
+        requestUrl.toString(),
+        {
+          method: "GET",
+          headers: {
+            Accept:
+              "application/json"
+          }
+        }
+      );
+
+    let data = null;
+
+    try {
+      data =
+        await response.json();
+    } catch (error) {
+      throw new Error(
+        "The property service returned an invalid response."
+      );
+    }
+
+    if (!response.ok) {
+      throw new Error(
+        data?.error ||
+        "The property lookup could not be completed."
+      );
+    }
+
+    return data;
   }
 
   function updateSellerSearchResults(
@@ -424,32 +480,39 @@
     zillowUrl,
     mapsUrl
   ) {
-    const results = document.getElementById(
-      "seller-search-result"
-    );
+    const results =
+      document.getElementById(
+        "seller-search-result"
+      );
 
-    const addressLabel = document.getElementById(
-      "seller-searched-property-address"
-    );
+    const addressLabel =
+      document.getElementById(
+        "seller-searched-property-address"
+      );
 
-    const zillowLink = document.getElementById(
-      "seller-zillow-property-link"
-    );
+    const zillowLink =
+      document.getElementById(
+        "seller-zillow-property-link"
+      );
 
-    const mapsLink = document.getElementById(
-      "seller-google-maps-link"
-    );
+    const mapsLink =
+      document.getElementById(
+        "seller-google-maps-link"
+      );
 
     if (addressLabel) {
-      addressLabel.textContent = address;
+      addressLabel.textContent =
+        address;
     }
 
     if (zillowLink) {
-      zillowLink.href = zillowUrl;
+      zillowLink.href =
+        zillowUrl;
     }
 
     if (mapsLink) {
-      mapsLink.href = mapsUrl;
+      mapsLink.href =
+        mapsUrl;
     }
 
     if (results) {
@@ -457,22 +520,59 @@
     }
   }
 
-  function showSellerAutofillStatus(message) {
-    const status = document.getElementById(
-      "seller-autofill-message"
-    );
+  function showSellerAutofillStatus(
+    message
+  ) {
+    const status =
+      document.getElementById(
+        "seller-autofill-message"
+      );
 
     if (!status) {
       return;
     }
 
-    status.textContent = message;
+    status.textContent =
+      message;
+  }
+
+  function createAutofillSuccessMessage(
+    count,
+    property
+  ) {
+    let message =
+      `MREO found the property and automatically filled ` +
+      `${count} field${count === 1 ? "" : "s"} below.`;
+
+    if (
+      property.estimatedValue !== null &&
+      property.estimatedValue !== undefined
+    ) {
+      message +=
+        ` The current automated value estimate is ` +
+        `${formatCurrency(property.estimatedValue)}.`;
+    }
+
+    if (
+      property.listingPrice !== null &&
+      property.listingPrice !== undefined
+    ) {
+      message +=
+        ` A public sale listing price of ` +
+        `${formatCurrency(property.listingPrice)} was also found.`;
+    }
+
+    message +=
+      " Please review all automatically populated information before submitting.";
+
+    return message;
   }
 
   function scrollToSellerPropertyForm() {
-    const heading = document.getElementById(
-      "property-information-heading"
-    );
+    const heading =
+      document.getElementById(
+        "property-information-heading"
+      );
 
     if (!heading) {
       return;
@@ -486,14 +586,306 @@
 
   /*
     ============================================
-    ADDRESS PARSING
+    LIVE PROPERTY DATA -> SELLER FORM
     ============================================
   */
 
-  function parseUnitedStatesAddress(address) {
-    const cleanedAddress = String(address || "")
-      .replace(/\s+/g, " ")
-      .trim();
+  function populateSellerPropertyData(
+    property
+  ) {
+    let count = 0;
+
+    const addField = (
+      id,
+      value,
+      options = {}
+    ) => {
+      if (
+        setFieldValue(
+          id,
+          value,
+          {
+            overwrite:
+              options.overwrite !== false,
+
+            markAutofilled: true
+          }
+        )
+      ) {
+        count += 1;
+      }
+    };
+
+    /*
+      ADDRESS
+    */
+
+    addField(
+      "property-address",
+      property.addressLine1
+    );
+
+    addField(
+      "property-city",
+      property.city
+    );
+
+    addField(
+      "property-state",
+      String(
+        property.state || ""
+      ).toUpperCase()
+    );
+
+    addField(
+      "property-zip",
+      property.zipCode
+    );
+
+    /*
+      PROPERTY CHARACTERISTICS
+    */
+
+    addField(
+      "property-type",
+      normalizePropertyType(
+        property.propertyType
+      )
+    );
+
+    addField(
+      "property-bedrooms",
+      property.bedrooms
+    );
+
+    addField(
+      "property-bathrooms",
+      property.bathrooms
+    );
+
+    addField(
+      "property-size",
+      property.squareFootage
+    );
+
+    addField(
+      "property-lot-size",
+      formatLotSize(
+        property.lotSize
+      )
+    );
+
+    addField(
+      "property-year-built",
+      property.yearBuilt
+    );
+
+    /*
+      PUBLIC SALE INFORMATION
+    */
+
+    addField(
+      "property-public-status",
+      formatPropertyStatus(
+        property.listingStatus
+      )
+    );
+
+    addField(
+      "property-public-price",
+      property.listingPrice
+    );
+
+    /*
+      ESTIMATED VALUE
+    */
+
+    addField(
+      "property-estimated-value",
+      property.estimatedValue
+    );
+
+    /*
+      ASKING PRICE
+
+      If the property is currently listed publicly,
+      initialize Seller asking price with that listing
+      price.
+
+      If there is no listing price, do NOT automatically
+      use the estimated value as the Seller's asking price.
+      Those are conceptually different things.
+    */
+
+    if (
+      property.listingPrice !== null &&
+      property.listingPrice !== undefined
+    ) {
+      if (
+        setFieldValue(
+          "asking-price",
+          property.listingPrice,
+          {
+            overwrite: false,
+            markAutofilled: true
+          }
+        )
+      ) {
+        count += 1;
+      }
+    }
+
+    return count;
+  }
+
+  function normalizePropertyType(
+    value
+  ) {
+    const normalized =
+      String(value || "")
+        .trim()
+        .toLowerCase()
+        .replace(
+          /[_-]+/g,
+          " "
+        );
+
+    if (!normalized) {
+      return "";
+    }
+
+    if (
+      normalized.includes(
+        "single"
+      ) &&
+      normalized.includes(
+        "family"
+      )
+    ) {
+      return "Single-family home";
+    }
+
+    if (
+      normalized.includes(
+        "condo"
+      ) ||
+      normalized.includes(
+        "condominium"
+      )
+    ) {
+      return "Condominium";
+    }
+
+    if (
+      normalized.includes(
+        "townhouse"
+      ) ||
+      normalized.includes(
+        "townhome"
+      )
+    ) {
+      return "Townhouse";
+    }
+
+    if (
+      normalized.includes(
+        "multi"
+      ) &&
+      normalized.includes(
+        "family"
+      )
+    ) {
+      return "Multifamily";
+    }
+
+    if (
+      normalized.includes(
+        "commercial"
+      )
+    ) {
+      return "Commercial";
+    }
+
+    if (
+      normalized === "land" ||
+      normalized.includes(
+        "vacant land"
+      ) ||
+      normalized.includes(
+        "lot"
+      )
+    ) {
+      return "Land";
+    }
+
+    return "Other";
+  }
+
+  function formatPropertyStatus(
+    value
+  ) {
+    const status =
+      String(value || "")
+        .trim()
+        .replace(
+          /[_-]+/g,
+          " "
+        )
+        .toLowerCase();
+
+    if (!status) {
+      return "";
+    }
+
+    return status.replace(
+      /\b\w/g,
+      (letter) =>
+        letter.toUpperCase()
+    );
+  }
+
+  function formatLotSize(
+    squareFeet
+  ) {
+    const lotSize =
+      Number(squareFeet);
+
+    if (
+      !Number.isFinite(lotSize) ||
+      lotSize <= 0
+    ) {
+      return "";
+    }
+
+    const acres =
+      lotSize / 43560;
+
+    if (acres >= 1) {
+      return (
+        `${formatNumber(lotSize)} sq ft ` +
+        `(${acres.toFixed(2)} acres)`
+      );
+    }
+
+    return (
+      `${formatNumber(lotSize)} sq ft ` +
+      `(${acres.toFixed(2)} acres)`
+    );
+  }
+
+  /*
+    ============================================
+    FALLBACK ADDRESS PARSING
+    ============================================
+  */
+
+  function parseUnitedStatesAddress(
+    address
+  ) {
+    const cleanedAddress =
+      String(address || "")
+        .replace(/\s+/g, " ")
+        .trim();
 
     const result = {
       street: "",
@@ -506,94 +898,119 @@
       return result;
     }
 
+    const pieces =
+      cleanedAddress
+        .split(",")
+        .map(
+          (piece) =>
+            piece.trim()
+        )
+        .filter(Boolean);
+
     /*
-      Preferred format:
+      Format:
 
       123 Main Street, Dallas, TX 75201
 
-      This also handles apartment/unit information containing
-      an additional comma by treating the final two comma-separated
-      sections as City and State/ZIP.
+      OR
+
+      123 Main Street, Dallas, TX, 75201
     */
 
-    const pieces = cleanedAddress
-      .split(",")
-      .map((piece) => piece.trim())
-      .filter(Boolean);
+    if (pieces.length >= 4) {
+      const zipPiece =
+        pieces[
+          pieces.length - 1
+        ];
+
+      const statePiece =
+        pieces[
+          pieces.length - 2
+        ];
+
+      const cityPiece =
+        pieces[
+          pieces.length - 3
+        ];
+
+      const streetPieces =
+        pieces.slice(
+          0,
+          pieces.length - 3
+        );
+
+      if (
+        /^[A-Za-z]{2}$/.test(
+          statePiece
+        ) &&
+        /^\d{5}(?:-\d{4})?$/.test(
+          zipPiece
+        )
+      ) {
+        result.street =
+          streetPieces.join(", ");
+
+        result.city =
+          cityPiece;
+
+        result.state =
+          statePiece.toUpperCase();
+
+        result.zip =
+          zipPiece;
+
+        return result;
+      }
+    }
 
     if (pieces.length >= 3) {
       const stateZipPiece =
-        pieces[pieces.length - 1];
+        pieces[
+          pieces.length - 1
+        ];
 
       const cityPiece =
-        pieces[pieces.length - 2];
+        pieces[
+          pieces.length - 2
+        ];
 
       const streetPieces =
-        pieces.slice(0, pieces.length - 2);
-
-      const stateZipMatch =
-        stateZipPiece.match(
-          /^([A-Za-z]{2})\s+(\d{5}(?:-\d{4})?)$/
+        pieces.slice(
+          0,
+          pieces.length - 2
         );
 
-      const stateOnlyMatch =
-        stateZipPiece.match(/^([A-Za-z]{2})$/);
+      const match =
+        stateZipPiece.match(
+          /^([A-Za-z]{2})\s*,?\s*(\d{5}(?:-\d{4})?)$/
+        );
 
-      result.street = streetPieces.join(", ");
-      result.city = cityPiece;
+      if (match) {
+        result.street =
+          streetPieces.join(", ");
 
-      if (stateZipMatch) {
+        result.city =
+          cityPiece;
+
         result.state =
-          stateZipMatch[1].toUpperCase();
+          match[1].toUpperCase();
 
         result.zip =
-          stateZipMatch[2];
-      } else if (stateOnlyMatch) {
-        result.state =
-          stateOnlyMatch[1].toUpperCase();
+          match[2];
+
+        return result;
       }
-
-      return result;
     }
 
-    /*
-      Secondary pattern for a conventional complete address
-      that happens to contain inconsistent comma spacing.
-    */
-
-    const completeAddressMatch =
-      cleanedAddress.match(
-        /^(.+?),\s*([^,]+?),\s*([A-Za-z]{2})\s+(\d{5}(?:-\d{4})?)$/
-      );
-
-    if (completeAddressMatch) {
-      result.street =
-        completeAddressMatch[1].trim();
-
-      result.city =
-        completeAddressMatch[2].trim();
-
-      result.state =
-        completeAddressMatch[3].toUpperCase();
-
-      result.zip =
-        completeAddressMatch[4];
-
-      return result;
-    }
-
-    /*
-      If MREO cannot confidently separate the full address,
-      keep the entered value in the street-address field rather
-      than inventing City/State/ZIP values.
-    */
-
-    result.street = cleanedAddress;
+    result.street =
+      cleanedAddress;
 
     return result;
   }
 
-  function populateSellerAddressFields(addressData) {
+  function populateSellerAddressFields(
+    addressData
+  ) {
     let count = 0;
 
     if (
@@ -649,397 +1066,15 @@
 
   /*
     ============================================
-    OPTIONAL PROPERTY-DATA LOOKUP
-    ============================================
-
-    This keeps credentials out of the GitHub Pages source.
-
-    An API key should NOT be placed directly in this JavaScript file.
-    A serverless/API endpoint can hold the credentials and return
-    normalized property information to the browser.
-  */
-
-  async function fetchPropertyData(address) {
-    const endpointUrl = new URL(
-      PROPERTY_DATA_ENDPOINT,
-      window.location.href
-    );
-
-    endpointUrl.searchParams.set(
-      "address",
-      address
-    );
-
-    const response = await fetch(
-      endpointUrl.toString(),
-      {
-        method: "GET",
-        headers: {
-          Accept: "application/json"
-        }
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(
-        `Property-data request failed with ${response.status}.`
-      );
-    }
-
-    return response.json();
-  }
-
-  /*
-    The mapper below accepts several common property-data response
-    shapes. This means a future endpoint can return either a simple
-    normalized object or a Zillow-style object without requiring the
-    Seller form itself to be rewritten.
-  */
-
-  function normalizePropertyData(data) {
-    if (!data || typeof data !== "object") {
-      return {};
-    }
-
-    const property =
-      data.property ||
-      data.home ||
-      data.result ||
-      data.data ||
-      data;
-
-    const address =
-      property.address &&
-      typeof property.address === "object"
-        ? property.address
-        : {};
-
-    return {
-      street: firstDefined(
-        address.streetAddress,
-        address.street,
-        property.streetAddress,
-        property.street,
-        property.addressLine1
-      ),
-
-      city: firstDefined(
-        address.city,
-        property.city
-      ),
-
-      state: firstDefined(
-        address.state,
-        property.state,
-        property.stateCode
-      ),
-
-      zip: firstDefined(
-        address.zipcode,
-        address.zipCode,
-        address.postalCode,
-        property.zipcode,
-        property.zipCode,
-        property.postalCode
-      ),
-
-      propertyType: firstDefined(
-        property.propertyType,
-        property.homeType,
-        property.type
-      ),
-
-      bedrooms: firstDefined(
-        property.bedrooms,
-        property.beds,
-        property.bedroomCount
-      ),
-
-      bathrooms: firstDefined(
-        property.bathrooms,
-        property.baths,
-        property.bathroomCount
-      ),
-
-      squareFeet: firstDefined(
-        property.livingArea,
-        property.livingAreaValue,
-        property.squareFeet,
-        property.sqft,
-        property.floorSize
-      ),
-
-      lotSize: firstDefined(
-        property.lotSize,
-        property.lotAreaValue,
-        property.lotArea,
-        property.lotSizeText
-      ),
-
-      lotSizeUnit: firstDefined(
-        property.lotAreaUnit,
-        property.lotSizeUnit
-      ),
-
-      yearBuilt: firstDefined(
-        property.yearBuilt,
-        property.builtYear
-      ),
-
-      status: firstDefined(
-        property.homeStatus,
-        property.listingStatus,
-        property.status
-      ),
-
-      price: firstDefined(
-        property.price,
-        property.listPrice,
-        property.listingPrice
-      ),
-
-      estimatedValue: firstDefined(
-        property.zestimate,
-        property.estimatedValue,
-        property.avm,
-        property.valuation
-      )
-    };
-  }
-
-  function populateSellerPropertyData(rawData) {
-    const data = normalizePropertyData(rawData);
-
-    let count = 0;
-
-    const addField = (
-      id,
-      value,
-      options = {}
-    ) => {
-      if (
-        setFieldValue(
-          id,
-          value,
-          {
-            overwrite:
-              options.overwrite !== false,
-            markAutofilled: true
-          }
-        )
-      ) {
-        count += 1;
-      }
-    };
-
-    addField(
-      "property-address",
-      data.street
-    );
-
-    addField(
-      "property-city",
-      data.city
-    );
-
-    addField(
-      "property-state",
-      String(data.state || "").toUpperCase()
-    );
-
-    addField(
-      "property-zip",
-      data.zip
-    );
-
-    addField(
-      "property-type",
-      normalizePropertyType(
-        data.propertyType
-      )
-    );
-
-    addField(
-      "property-bedrooms",
-      cleanNumericValue(data.bedrooms)
-    );
-
-    addField(
-      "property-bathrooms",
-      cleanNumericValue(data.bathrooms)
-    );
-
-    addField(
-      "property-size",
-      cleanNumericValue(data.squareFeet)
-    );
-
-    addField(
-      "property-lot-size",
-      formatLotSize(
-        data.lotSize,
-        data.lotSizeUnit
-      )
-    );
-
-    addField(
-      "property-year-built",
-      cleanNumericValue(data.yearBuilt)
-    );
-
-    addField(
-      "property-public-status",
-      formatPropertyStatus(data.status)
-    );
-
-    const publicPrice =
-      cleanNumericValue(data.price);
-
-    addField(
-      "property-public-price",
-      publicPrice
-    );
-
-    addField(
-      "property-estimated-value",
-      cleanNumericValue(
-        data.estimatedValue
-      )
-    );
-
-    /*
-      If a current public listing price exists, use it as the
-      initial Seller asking price only when the Seller has not
-      already entered an asking price.
-
-      The field remains editable.
-    */
-
-    if (
-      setFieldValue(
-        "asking-price",
-        publicPrice,
-        {
-          overwrite: false,
-          markAutofilled: true
-        }
-      )
-    ) {
-      count += 1;
-    }
-
-    return count;
-  }
-
-  function normalizePropertyType(value) {
-    const normalized = String(value || "")
-      .trim()
-      .toLowerCase()
-      .replace(/[_-]+/g, " ");
-
-    if (!normalized) {
-      return "";
-    }
-
-    if (
-      normalized.includes("single") &&
-      normalized.includes("family")
-    ) {
-      return "Single-family home";
-    }
-
-    if (
-      normalized.includes("condo") ||
-      normalized.includes("condominium")
-    ) {
-      return "Condominium";
-    }
-
-    if (
-      normalized.includes("townhouse") ||
-      normalized.includes("townhome")
-    ) {
-      return "Townhouse";
-    }
-
-    if (
-      normalized.includes("multi") &&
-      normalized.includes("family")
-    ) {
-      return "Multifamily";
-    }
-
-    if (
-      normalized.includes("commercial")
-    ) {
-      return "Commercial";
-    }
-
-    if (
-      normalized === "land" ||
-      normalized.includes("vacant land") ||
-      normalized.includes("lot")
-    ) {
-      return "Land";
-    }
-
-    return "Other";
-  }
-
-  function formatPropertyStatus(value) {
-    const status = String(value || "")
-      .trim()
-      .replace(/[_-]+/g, " ")
-      .toLowerCase();
-
-    if (!status) {
-      return "";
-    }
-
-    return status.replace(
-      /\b\w/g,
-      (letter) => letter.toUpperCase()
-    );
-  }
-
-  function formatLotSize(value, unit) {
-    if (
-      value === undefined ||
-      value === null ||
-      String(value).trim() === ""
-    ) {
-      return "";
-    }
-
-    const rawValue =
-      String(value).trim();
-
-    const rawUnit =
-      String(unit || "").trim();
-
-    if (
-      /acre|sq|feet|ft/i.test(rawValue)
-    ) {
-      return rawValue;
-    }
-
-    if (rawUnit) {
-      return `${rawValue} ${rawUnit}`;
-    }
-
-    return rawValue;
-  }
-
-  /*
-    ============================================
     SELLER PROPERTY FORM
     ============================================
   */
 
   function initializeSellerForm() {
-    const sellerForm = document.getElementById(
-      "seller-form"
-    );
+    const sellerForm =
+      document.getElementById(
+        "seller-form"
+      );
 
     if (!sellerForm) {
       return;
@@ -1050,12 +1085,16 @@
       (event) => {
         event.preventDefault();
 
-        if (!sellerForm.reportValidity()) {
+        if (
+          !sellerForm.reportValidity()
+        ) {
           return;
         }
 
         const sellerName =
-          getFieldValue("seller-name");
+          getFieldValue(
+            "seller-name"
+          );
 
         const propertyAddress =
           buildSellerPropertyAddress();
@@ -1097,19 +1136,28 @@
 
   function buildSellerPropertyAddress() {
     const street =
-      getFieldValue("property-address");
+      getFieldValue(
+        "property-address"
+      );
 
     const city =
-      getFieldValue("property-city");
+      getFieldValue(
+        "property-city"
+      );
 
     const stateCode =
-      getFieldValue("property-state");
+      getFieldValue(
+        "property-state"
+      );
 
     const zipCode =
-      getFieldValue("property-zip");
+      getFieldValue(
+        "property-zip"
+      );
 
     const cityStateZip = [
       city,
+
       [stateCode, zipCode]
         .filter(Boolean)
         .join(" ")
@@ -1133,7 +1181,9 @@
 
     setText(
       "contract-seller-name",
-      getFieldValue("seller-name")
+      getFieldValue(
+        "seller-name"
+      )
     );
 
     setText(
@@ -1145,7 +1195,9 @@
     setText(
       "contract-purchase-price",
       formatCurrency(
-        getFieldValue("asking-price")
+        getFieldValue(
+          "asking-price"
+        )
       )
     );
   }
@@ -1181,99 +1233,112 @@
           previewContainer
         );
 
-        const files = Array.from(
-          mediaInput.files || []
+        const files =
+          Array.from(
+            mediaInput.files || []
+          );
+
+        files.forEach(
+          (file) => {
+            if (
+              !isSupportedMediaFile(
+                file
+              )
+            ) {
+              return;
+            }
+
+            const previewUrl =
+              URL.createObjectURL(
+                file
+              );
+
+            state.mediaPreviewUrls.push(
+              previewUrl
+            );
+
+            const figure =
+              document.createElement(
+                "figure"
+              );
+
+            figure.style.margin =
+              "0";
+
+            let preview;
+
+            if (
+              file.type.startsWith(
+                "image/"
+              )
+            ) {
+              preview =
+                document.createElement(
+                  "img"
+                );
+
+              preview.src =
+                previewUrl;
+
+              preview.alt =
+                file.name;
+
+              preview.loading =
+                "lazy";
+            } else {
+              preview =
+                document.createElement(
+                  "video"
+                );
+
+              preview.src =
+                previewUrl;
+
+              preview.controls =
+                true;
+
+              preview.preload =
+                "metadata";
+
+              preview.muted =
+                true;
+            }
+
+            const caption =
+              document.createElement(
+                "figcaption"
+              );
+
+            caption.textContent =
+              shortenFilename(
+                file.name
+              );
+
+            caption.style.marginTop =
+              "6px";
+
+            caption.style.fontSize =
+              "11px";
+
+            caption.style.color =
+              "#66645d";
+
+            caption.style.overflowWrap =
+              "anywhere";
+
+            figure.appendChild(
+              preview
+            );
+
+            figure.appendChild(
+              caption
+            );
+
+            previewContainer.appendChild(
+              figure
+            );
+          }
         );
-
-        files.forEach((file) => {
-          if (
-            !isSupportedMediaFile(file)
-          ) {
-            return;
-          }
-
-          const previewUrl =
-            URL.createObjectURL(file);
-
-          state.mediaPreviewUrls.push(
-            previewUrl
-          );
-
-          const figure =
-            document.createElement(
-              "figure"
-            );
-
-          figure.style.margin = "0";
-
-          let preview;
-
-          if (
-            file.type.startsWith(
-              "image/"
-            )
-          ) {
-            preview =
-              document.createElement(
-                "img"
-              );
-
-            preview.src =
-              previewUrl;
-
-            preview.alt =
-              file.name;
-
-            preview.loading =
-              "lazy";
-          } else {
-            preview =
-              document.createElement(
-                "video"
-              );
-
-            preview.src =
-              previewUrl;
-
-            preview.controls = true;
-            preview.preload = "metadata";
-            preview.muted = true;
-          }
-
-          const caption =
-            document.createElement(
-              "figcaption"
-            );
-
-          caption.textContent =
-            shortenFilename(
-              file.name
-            );
-
-          caption.style.marginTop =
-            "6px";
-
-          caption.style.fontSize =
-            "11px";
-
-          caption.style.color =
-            "#66645d";
-
-          caption.style.overflowWrap =
-            "anywhere";
-
-          figure.appendChild(
-            preview
-          );
-
-          figure.appendChild(
-            caption
-          );
-
-          previewContainer.appendChild(
-            figure
-          );
-        });
       }
     );
 
@@ -1287,15 +1352,25 @@
     );
   }
 
-  function isSupportedMediaFile(file) {
+  function isSupportedMediaFile(
+    file
+  ) {
     return (
-      file.type.startsWith("image/") ||
-      file.type.startsWith("video/")
+      file.type.startsWith(
+        "image/"
+      ) ||
+      file.type.startsWith(
+        "video/"
+      )
     );
   }
 
-  function shortenFilename(filename) {
-    if (filename.length <= 28) {
+  function shortenFilename(
+    filename
+  ) {
+    if (
+      filename.length <= 28
+    ) {
       return filename;
     }
 
@@ -1305,10 +1380,14 @@
     );
   }
 
-  function clearMediaPreviews(container) {
+  function clearMediaPreviews(
+    container
+  ) {
     state.mediaPreviewUrls.forEach(
       (url) => {
-        URL.revokeObjectURL(url);
+        URL.revokeObjectURL(
+          url
+        );
       }
     );
 
@@ -1324,12 +1403,12 @@
     BUYER PROPERTY SELECTION
     ============================================
 
-    properties.html will link to buyer.html using query parameters:
+    The forthcoming properties.html page will send:
 
       buyer.html?address=...&price=...
 
-    This allows the Buyer form to know which available property the
-    user selected.
+    This lets the selected property flow directly
+    into the Buyer interest form.
   */
 
   function initializeBuyerPropertySelection() {
@@ -1348,10 +1427,14 @@
       );
 
     const propertyAddress =
-      parameters.get("address");
+      parameters.get(
+        "address"
+      );
 
     const propertyPrice =
-      parameters.get("price");
+      parameters.get(
+        "price"
+      );
 
     if (propertyAddress) {
       setFieldValue(
@@ -1404,12 +1487,16 @@
       (event) => {
         event.preventDefault();
 
-        if (!buyerForm.reportValidity()) {
+        if (
+          !buyerForm.reportValidity()
+        ) {
           return;
         }
 
         const buyerName =
-          getFieldValue("buyer-name");
+          getFieldValue(
+            "buyer-name"
+          );
 
         const address =
           getFieldValue(
@@ -1464,7 +1551,9 @@
 
     setText(
       "buyer-contract-name",
-      getFieldValue("buyer-name")
+      getFieldValue(
+        "buyer-name"
+      )
     );
 
     setText(
@@ -1501,7 +1590,8 @@
           "click",
           () => {
             const contractId =
-              button.dataset.printContract;
+              button.dataset
+                .printContract;
 
             printContract(
               contractId
@@ -1512,7 +1602,9 @@
     );
   }
 
-  function printContract(contractId) {
+  function printContract(
+    contractId
+  ) {
     const contractBody =
       document.getElementById(
         contractId
@@ -1527,15 +1619,19 @@
         ".contract-modal, .modal-overlay"
       );
 
-    const titleElement = modal
-      ? modal.querySelector(
-          ".contract-header h2, .modal-header h2"
-        )
-      : null;
+    const titleElement =
+      modal
+        ? modal.querySelector(
+            ".contract-header h2, .modal-header h2"
+          )
+        : null;
 
-    const title = titleElement
-      ? titleElement.textContent.trim()
-      : "MREO As-Is Property Agreement";
+    const title =
+      titleElement
+        ? titleElement
+            .textContent
+            .trim()
+        : "MREO As-Is Property Agreement";
 
     const printWindow =
       window.open(
@@ -1552,10 +1648,13 @@
       return;
     }
 
-    printWindow.opener = null;
+    printWindow.opener =
+      null;
 
     const safeTitle =
-      escapeHtml(title);
+      escapeHtml(
+        title
+      );
 
     printWindow.document.write(`
       <!DOCTYPE html>
@@ -1622,14 +1721,17 @@
               margin-top: 34px;
 
               display: grid;
-              grid-template-columns: 1fr 1fr;
+              grid-template-columns:
+                1fr 1fr;
+
               gap: 30px;
             }
 
             .signature-line {
               padding-top: 7px;
 
-              border-top: 1px solid #171717;
+              border-top:
+                1px solid #171717;
 
               font-size: 9pt;
             }
@@ -1658,9 +1760,13 @@
     );
   }
 
-  function escapeHtml(value) {
+  function escapeHtml(
+    value
+  ) {
     const temporaryElement =
-      document.createElement("span");
+      document.createElement(
+        "span"
+      );
 
     temporaryElement.textContent =
       value;
@@ -1707,7 +1813,9 @@
               updateBuyerContract();
             }
 
-            openModal(modalId);
+            openModal(
+              modalId
+            );
           }
         );
       }
@@ -1723,7 +1831,9 @@
                 ".contract-modal, .modal-overlay"
               );
 
-            closeModal(modal);
+            closeModal(
+              modal
+            );
           }
         );
       }
@@ -1733,27 +1843,37 @@
       .querySelectorAll(
         ".contract-modal, .modal-overlay"
       )
-      .forEach((modal) => {
-        modal.addEventListener(
-          "click",
-          (event) => {
-            if (
-              event.target === modal
-            ) {
-              closeModal(modal);
+      .forEach(
+        (modal) => {
+          modal.addEventListener(
+            "click",
+            (event) => {
+              if (
+                event.target ===
+                modal
+              ) {
+                closeModal(
+                  modal
+                );
+              }
             }
-          }
-        );
-      });
+          );
+        }
+      );
 
     document.addEventListener(
       "keydown",
       (event) => {
-        if (!state.activeModal) {
+        if (
+          !state.activeModal
+        ) {
           return;
         }
 
-        if (event.key === "Escape") {
+        if (
+          event.key ===
+          "Escape"
+        ) {
           event.preventDefault();
 
           closeModal(
@@ -1763,7 +1883,10 @@
           return;
         }
 
-        if (event.key === "Tab") {
+        if (
+          event.key ===
+          "Tab"
+        ) {
           keepFocusInsideModal(
             event
           );
@@ -1772,7 +1895,9 @@
     );
   }
 
-  function openModal(modalId) {
+  function openModal(
+    modalId
+  ) {
     const modal =
       document.getElementById(
         modalId
@@ -1785,7 +1910,8 @@
     state.previouslyFocusedElement =
       document.activeElement;
 
-    state.activeModal = modal;
+    state.activeModal =
+      modal;
 
     modal.hidden = false;
 
@@ -1802,7 +1928,9 @@
     }
   }
 
-  function closeModal(modal) {
+  function closeModal(
+    modal
+  ) {
     if (!modal) {
       return;
     }
@@ -1812,7 +1940,8 @@
     document.body.style.overflow =
       "";
 
-    state.activeModal = null;
+    state.activeModal =
+      null;
 
     if (
       state.previouslyFocusedElement &&
@@ -1820,14 +1949,18 @@
         .previouslyFocusedElement
         .focus === "function"
     ) {
-      state.previouslyFocusedElement.focus();
+      state
+        .previouslyFocusedElement
+        .focus();
     }
 
     state.previouslyFocusedElement =
       null;
   }
 
-  function keepFocusInsideModal(event) {
+  function keepFocusInsideModal(
+    event
+  ) {
     const focusableElements =
       Array.from(
         state.activeModal.querySelectorAll(
