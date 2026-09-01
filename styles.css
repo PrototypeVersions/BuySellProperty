@@ -297,7 +297,6 @@ textarea {
   justify-content: space-between;
 }
 
-
 .buyer-card {
   border-right: 1px solid var(--ink);
 }
@@ -453,6 +452,19 @@ textarea {
 .button-blue:hover {
   background: var(--ink);
   border-color: var(--ink);
+}
+
+.primary-button:disabled,
+.secondary-button:disabled,
+.contract-button:disabled {
+  cursor: wait;
+  opacity: 0.62;
+}
+
+.primary-button:disabled:hover,
+.secondary-button:disabled:hover,
+.contract-button:disabled:hover {
+  transform: none;
 }
 
 .button-group,
@@ -853,6 +865,27 @@ textarea {
   border-left: 4px solid #6fa85f;
 }
 
+.property-autofill-message {
+  margin: 10px 0 0;
+
+  color: #3f5f36;
+
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.65;
+}
+
+.property-review-note {
+  margin: -8px 0 24px;
+}
+
+input[data-autofilled="true"],
+select[data-autofilled="true"],
+textarea[data-autofilled="true"] {
+  background: #f2faee;
+  border-color: #8db77e;
+}
+
 .success-message,
 .status-success {
   background: rgba(35, 70, 160, 0.09);
@@ -1016,6 +1049,138 @@ textarea {
 }
 
 /* =========================================
+   AVAILABLE PROPERTY MARKETPLACE
+   ========================================= */
+
+.properties-heading {
+  max-width: 820px;
+}
+
+.property-marketplace {
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+
+  border-top: 1px solid var(--ink);
+}
+
+.property-row {
+  display: grid;
+  grid-template-columns:
+    180px
+    minmax(0, 1.25fr)
+    minmax(250px, 0.85fr)
+    190px;
+
+  gap: 24px;
+  align-items: center;
+
+  padding: 24px 0;
+
+  border-bottom: 1px solid var(--ink);
+}
+
+.property-thumbnail {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+
+  overflow: hidden;
+
+  background: var(--line);
+  border: 1px solid var(--ink);
+}
+
+.property-thumbnail img {
+  width: 100%;
+  height: 100%;
+
+  display: block;
+
+  object-fit: cover;
+}
+
+.property-main-info {
+  min-width: 0;
+}
+
+.property-location {
+  margin: 0 0 6px;
+
+  color: var(--blue);
+
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.property-main-info h2 {
+  margin: 0 0 10px;
+
+  font-size: clamp(22px, 2.2vw, 30px);
+  font-weight: 800;
+  letter-spacing: -0.055em;
+  line-height: 1.05;
+}
+
+.property-description {
+  max-width: 500px;
+
+  margin: 0;
+
+  color: var(--muted);
+
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.property-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 18px;
+}
+
+.property-facts > div {
+  min-width: 0;
+}
+
+.property-fact-label {
+  display: block;
+
+  margin-bottom: 2px;
+
+  color: var(--muted);
+
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.property-facts strong {
+  display: block;
+
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.property-action {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.property-action .primary-button {
+  width: 100%;
+  max-width: 190px;
+
+  padding-right: 16px;
+  padding-left: 16px;
+
+  text-align: center;
+}
+
+/* =========================================
    FOOTER
    ========================================= */
 
@@ -1097,6 +1262,29 @@ textarea {
     min-height: 320px;
 
     padding: 28px;
+  }
+
+  .property-row {
+    grid-template-columns:
+      160px
+      minmax(0, 1fr);
+
+    gap: 20px;
+  }
+
+  .property-facts {
+    grid-column: 2;
+  }
+
+  .property-action {
+    grid-column: 2;
+
+    justify-content: flex-start;
+  }
+
+  .property-action .primary-button {
+    width: auto;
+    max-width: none;
   }
 }
 
@@ -1209,6 +1397,39 @@ textarea {
   .signature-grid {
     grid-template-columns: 1fr;
     gap: 30px;
+  }
+
+  .property-row {
+    grid-template-columns: 1fr;
+    gap: 17px;
+
+    padding: 24px 0 28px;
+  }
+
+  .property-thumbnail {
+    aspect-ratio: 16 / 9;
+  }
+
+  .property-main-info,
+  .property-facts,
+  .property-action {
+    grid-column: 1;
+  }
+
+  .property-facts {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+
+    padding-top: 2px;
+  }
+
+  .property-action {
+    width: 100%;
+  }
+
+  .property-action .primary-button {
+    width: 100%;
+    max-width: none;
   }
 
   .site-footer {
