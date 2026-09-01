@@ -10,7 +10,7 @@
 
   <meta
     name="description"
-    content="Search for property information and prepare for an as-is real estate purchase."
+    content="Browse available properties and prepare for an as-is real estate purchase through MREO."
   >
 
   <title>Buy Property As Is | MREO</title>
@@ -46,15 +46,14 @@
       class="page-heading"
       aria-labelledby="buyer-page-title"
     >
-
-
       <h1 id="buyer-page-title">
         Buy Property As Is
       </h1>
 
       <p>
-        Enter a property address to find publicly available listing
-        information, explore its location, and prepare an as-is offer.
+        Browse properties currently available through MREO, review
+        their key information, and prepare your interest in an
+        as-is purchase.
       </p>
     </section>
 
@@ -62,81 +61,31 @@
       <div>
         <section
           class="form-panel"
-          aria-labelledby="property-search-heading"
+          aria-labelledby="available-properties-heading"
         >
-          <h2 id="property-search-heading">
-            Find a property
+          <p class="section-label">
+            Property marketplace
+          </p>
+
+          <h2 id="available-properties-heading">
+            Find an available property
           </h2>
 
-          <form id="buyer-search-form">
-            <div class="form-field full-width">
-              <label for="buyer-property-address">
-                Property address
-              </label>
+          <p>
+            View properties currently available through the MREO
+            network. Compare asking prices, property size, bedrooms,
+            bathrooms, location, condition, and other key information
+            before preparing your interest.
+          </p>
 
-              <div class="address-search">
-                <input
-                  id="buyer-property-address"
-                  name="buyerPropertyAddress"
-                  type="text"
-                  autocomplete="street-address"
-                  placeholder="123 Main Street, Dallas, TX 75201"
-                  required
-                >
-
-                <button
-                  class="primary-button button-blue"
-                  type="submit"
-                >
-                  Search
-                </button>
-              </div>
-
-              <p class="field-note">
-                Include the city, state, and ZIP code when available
-                for more accurate search results.
-              </p>
-            </div>
-          </form>
-
-          <div
-            id="buyer-search-result"
-            class="search-result"
-            role="status"
-            aria-live="polite"
-            hidden
-          >
-            <p>
-              Search results are ready for:
-              <strong id="searched-property-address"></strong>
-            </p>
-
-            <div class="button-group">
-              <a
-                id="zillow-property-link"
-                class="primary-button button-blue"
-                href="#"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Open Zillow
-              </a>
-
-              <a
-                id="google-maps-link"
-                class="secondary-button"
-                href="#"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                View on Google Maps
-              </a>
-            </div>
-
-            <p class="field-note">
-              Zillow results depend on available public listings.
-              A matching property page may not exist for every address.
-            </p>
+          <div class="form-actions">
+            <a
+              class="primary-button button-blue"
+              href="properties.html"
+            >
+              Search Available Properties
+              <span aria-hidden="true">→</span>
+            </a>
           </div>
         </section>
 
@@ -160,13 +109,15 @@
                   id="buyer-offer-address"
                   name="buyerOfferAddress"
                   type="text"
+                  autocomplete="street-address"
                   placeholder="Property address"
                   required
                 >
 
                 <p class="field-note">
-                  Searching above will automatically add the address
-                  here.
+                  If you select a property from the available-property
+                  list, its address can be added here automatically.
+                  You may also enter an address manually.
                 </p>
               </div>
 
@@ -386,7 +337,7 @@
 
         <ul>
           <li>
-            Review available listing and pricing information.
+            Review available property and pricing information.
           </li>
 
           <li>
